@@ -159,19 +159,19 @@ class ApiClient
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function blends()
+    function blends($package)
     {
-        return json_decode($this->execute("/blend/list"));
+        return json_decode($this->execute("/{$package}/blend/list"));
     }
 
-    function blend($blend)
+    function blend($package, $blend)
     {
-        return json_decode($this->execute("/blend/{$blend}/info"));
+        return json_decode($this->execute("/{$package}/blend/{$blend}/info"));
     }
 
-    function linetype($linetype)
+    function linetype($package, $linetype)
     {
-        return json_decode($this->execute("/{$linetype}/info"));
+        return json_decode($this->execute("/{$package}/{$linetype}/info"));
     }
 
     function tablelink($tablelink)
@@ -179,19 +179,19 @@ class ApiClient
         return json_decode($this->execute("/tablelink/{$tablelink}/info"));
     }
 
-    function suggested($linetype)
+    function suggested($package, $linetype)
     {
-        return json_decode($this->execute("/{$linetype}/suggested"), true);
+        return json_decode($this->execute("/{$package}/{$linetype}/suggested"), true);
     }
 
-    function get($linetype, $id)
+    function get($package, $linetype, $id)
     {
-        return json_decode($this->execute("/{$linetype}/{$id}"));
+        return json_decode($this->execute("/{$package}/{$linetype}/{$id}"));
     }
 
-    function children($linetype, $childset, $id)
+    function children($package, $linetype, $childset, $id)
     {
-        return json_decode($this->execute("/{$linetype}/{$id}/child/{$childset}"));
+        return json_decode($this->execute("/{$package}/{$linetype}/{$id}/child/{$childset}"));
     }
 
     function file($file)
