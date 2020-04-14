@@ -16,7 +16,7 @@ class ApiClient
     {
         $cmd = $this->generateCurlCommand($endpoint, $middle);
         $result = shell_exec($cmd);
-        // error_log($cmd . ' ' . $result);
+        error_log($cmd . ' ' . $result);
 
         $data = json_decode($result);
 
@@ -78,45 +78,45 @@ class ApiClient
         return '--request POST';
     }
 
-    function search($blend, $filters = [])
+    function search($package, $blend, $filters = [])
     {
         $query = $this->render_filters($filters);
+        $endpoint = '/' . $package . '/blend/' . $blend . '/search' . ($query ? "?{$query}" : '');
 
-        $endpoint = '/blend/' . $blend . '/search' . ($query ? "?{$query}" : '');
         return json_decode($this->execute($endpoint));
     }
 
-    function bulkdelete($blend, $filters = [])
+    function bulkdelete($package, $blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/blend/' . $blend . '/delete' . ($query ? "?{$query}" : '');
+        $endpoint = '/' . $package . '/blend/' . $blend . '/delete' . ($query ? "?{$query}" : '');
         $middle = $this->post_headers();
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function bulkupdate($blend, $data, $filters = [])
+    function bulkupdate($package, $blend, $data, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/blend/' . $blend . '/update' . ($query ? "?{$query}" : '');
+        $endpoint = '/' . $package . '/blend/' . $blend . '/update' . ($query ? "?{$query}" : '');
         $middle = $this->post_json_headers($data);
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function bulkprint($blend, $filters = [])
+    function bulkprint($package, $blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/blend/' . $blend . '/print' . ($query ? "?{$query}" : '');
+        $endpoint = '/' . $package . '/blend/' . $blend . '/print' . ($query ? "?{$query}" : '');
         $middle = $this->post_headers();
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function summaries($blend, $filters = [])
+    function summaries($package, $blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/blend/' . $blend . '/summaries' . ($query ? "?{$query}" : '');
+        $endpoint = '/' . $package . '/blend/' . $blend . '/summaries' . ($query ? "?{$query}" : '');
 
         $results = [];
 
@@ -127,33 +127,33 @@ class ApiClient
         return $results;
     }
 
-    function save($linetype, $line)
+    function save($package, $linetype, $line)
     {
-        $endpoint = '/' . $linetype . (@$line->id ? '/' . $line->id : '') . '/save';
+        $endpoint = '/' . $package . '/' . $linetype . (@$line->id ? '/' . $line->id : '') . '/save';
         $middle = $this->post_json_headers($line);
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function delete($linetype, $id)
+    function delete($package, $linetype, $id)
     {
-        $endpoint = '/' . $linetype . '/' . $id . '/delete';
+        $endpoint = '/' . $package . '/' . $linetype . '/' . $id . '/delete';
         $middle = $this->post_headers();
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function unlink($linetype, $id, $parenttype, $parentid)
+    function unlink($package, $linetype, $id, $parenttype, $parentid)
     {
-        $endpoint = '/' . $linetype . '/' . $id . '/unlink/' . $parenttype . '/' . $parentid;
+        $endpoint = '/' . $package . '/' . $linetype . '/' . $id . '/unlink/' . $parenttype . '/' . $parentid;
         $middle = $this->post_headers();
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function print($linetype, $id)
+    function print($package, $linetype, $id)
     {
-        $endpoint = '/' . $linetype . '/' . $id . '/print';
+        $endpoint = '/' . $package . '/' . $linetype . '/' . $id . '/print';
         $middle = $this->post_headers();
 
         return json_decode($this->execute($endpoint, $middle));
