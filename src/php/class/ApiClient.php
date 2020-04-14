@@ -16,7 +16,10 @@ class ApiClient
     {
         $cmd = $this->generateCurlCommand($endpoint, $middle);
         $result = shell_exec($cmd);
-        error_log($cmd . ' ' . $result);
+
+        if (defined('APIDEBUG') && APIDEBUG) {
+            error_log($cmd . ' ' . $result);
+        }
 
         $data = json_decode($result);
 
