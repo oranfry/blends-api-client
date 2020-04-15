@@ -81,45 +81,45 @@ class ApiClient
         return '--request POST';
     }
 
-    function search($package, $blend, $filters = [])
+    function search($blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/' . $package . '/blend/' . $blend . '/search' . ($query ? "?{$query}" : '');
+        $endpoint = '/blend/' . $blend . '/search' . ($query ? "?{$query}" : '');
 
         return json_decode($this->execute($endpoint));
     }
 
-    function bulkdelete($package, $blend, $filters = [])
+    function bulkdelete($blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/' . $package . '/blend/' . $blend . '/delete' . ($query ? "?{$query}" : '');
+        $endpoint = '/blend/' . $blend . '/delete' . ($query ? "?{$query}" : '');
         $middle = $this->post_headers();
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function bulkupdate($package, $blend, $data, $filters = [])
+    function bulkupdate($blend, $data, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/' . $package . '/blend/' . $blend . '/update' . ($query ? "?{$query}" : '');
+        $endpoint = '/blend/' . $blend . '/update' . ($query ? "?{$query}" : '');
         $middle = $this->post_json_headers($data);
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function bulkprint($package, $blend, $filters = [])
+    function bulkprint($blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/' . $package . '/blend/' . $blend . '/print' . ($query ? "?{$query}" : '');
+        $endpoint = '/blend/' . $blend . '/print' . ($query ? "?{$query}" : '');
         $middle = $this->post_headers();
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function summaries($package, $blend, $filters = [])
+    function summaries($blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/' . $package . '/blend/' . $blend . '/summaries' . ($query ? "?{$query}" : '');
+        $endpoint = '/blend/' . $blend . '/summaries' . ($query ? "?{$query}" : '');
 
         $results = [];
 
@@ -130,51 +130,51 @@ class ApiClient
         return $results;
     }
 
-    function save($package, $linetype, $line)
+    function save($linetype, $line)
     {
-        $endpoint = '/' . $package . '/' . $linetype . (@$line->id ? '/' . $line->id : '') . '/save';
+        $endpoint = '/' . $linetype . (@$line->id ? '/' . $line->id : '') . '/save';
         $middle = $this->post_json_headers($line);
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function delete($package, $linetype, $id)
+    function delete($linetype, $id)
     {
-        $endpoint = '/' . $package . '/' . $linetype . '/' . $id . '/delete';
+        $endpoint = '/' . $linetype . '/' . $id . '/delete';
         $middle = $this->post_headers();
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function unlink($package, $linetype, $id, $parenttype, $parentid)
+    function unlink($linetype, $id, $parenttype, $parentid)
     {
-        $endpoint = '/' . $package . '/' . $linetype . '/' . $id . '/unlink/' . $parenttype . '/' . $parentid;
+        $endpoint = '/' . $linetype . '/' . $id . '/unlink/' . $parenttype . '/' . $parentid;
         $middle = $this->post_headers();
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function print($package, $linetype, $id)
+    function print($linetype, $id)
     {
-        $endpoint = '/' . $package . '/' . $linetype . '/' . $id . '/print';
+        $endpoint = '/' . $linetype . '/' . $id . '/print';
         $middle = $this->post_headers();
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function blends($package)
+    function blends()
     {
-        return json_decode($this->execute("/{$package}/blend/list"));
+        return json_decode($this->execute("/blend/list"));
     }
 
-    function blend($package, $blend)
+    function blend($blend)
     {
-        return json_decode($this->execute("/{$package}/blend/{$blend}/info"));
+        return json_decode($this->execute("/blend/{$blend}/info"));
     }
 
-    function linetype($package, $linetype)
+    function linetype($linetype)
     {
-        return json_decode($this->execute("/{$package}/{$linetype}/info"));
+        return json_decode($this->execute("/{$linetype}/info"));
     }
 
     function tablelink($tablelink)
@@ -182,19 +182,19 @@ class ApiClient
         return json_decode($this->execute("/tablelink/{$tablelink}/info"));
     }
 
-    function suggested($package, $linetype)
+    function suggested($linetype)
     {
-        return json_decode($this->execute("/{$package}/{$linetype}/suggested"), true);
+        return json_decode($this->execute("/{$linetype}/suggested"), true);
     }
 
-    function get($package, $linetype, $id)
+    function get($linetype, $id)
     {
-        return json_decode($this->execute("/{$package}/{$linetype}/{$id}"));
+        return json_decode($this->execute("/{$linetype}/{$id}"));
     }
 
-    function children($package, $linetype, $childset, $id)
+    function children($linetype, $childset, $id)
     {
-        return json_decode($this->execute("/{$package}/{$linetype}/{$id}/child/{$childset}"));
+        return json_decode($this->execute("/{$linetype}/{$id}/child/{$childset}"));
     }
 
     function file($file)
