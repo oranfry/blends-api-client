@@ -29,7 +29,7 @@ class ApiClient
         return $result;
     }
 
-    private function generateCurlCommand($endpoint, $middle = null)
+    public function generateCurlCommand($endpoint, $middle = null)
     {
         if (!preg_match('@^/@', $endpoint)) {
             error_log('Endpoint should start with /');
@@ -65,12 +65,12 @@ class ApiClient
         return implode('&', $values);
     }
 
-    private function post_json_headers($data)
+    public function post_json_headers($data, $method = 'POST')
     {
         $parts = [];
 
         $parts[] = '-H "Content-Type: application/json"';
-        $parts[] = '--request POST';
+        $parts[] = '--request ' . $method;
         $parts[] = "--data '" . json_encode($data) . "'";
 
         return implode(' ', $parts);
