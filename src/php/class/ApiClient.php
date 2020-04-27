@@ -24,7 +24,7 @@ class ApiClient
         $data = json_decode($result);
 
         if (@$data->error) {
-            error_response('Api error' . ($data ? ': ' . $data->error : ''));
+            error_response('Api error (' . $endpoint . ')' . ($data ? ': ' . $data->error : ''));
         }
         return $result;
     }
@@ -130,33 +130,38 @@ class ApiClient
         return $results;
     }
 
-    function save($linetype, $line)
+    function save($linetype, $data)
     {
-        $endpoint = '/' . $linetype . (@$line->id ? '/' . $line->id : '') . '/save';
-        $middle = $this->post_json_headers($line);
+        $endpoint = '/' . $linetype;
+        $middle = $this->post_json_headers($data);
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
     function delete($linetype, $id)
     {
-        $endpoint = '/' . $linetype . '/' . $id . '/delete';
+        $endpoint = '/' . $linetype . '/delete?id=' . $id;
         $middle = $this->post_headers();
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
-    function unlink($linetype, $id, $parenttype, $parentid)
+    function unlink($linetype, $id, $parent)
     {
-        $endpoint = '/' . $linetype . '/' . $id . '/unlink/' . $parenttype . '/' . $parentid;
-        $middle = $this->post_headers();
+        $endpoint = '/' . $linetype . '/unlink';
+        $line = (object) [
+            'id' => $id,
+            'parent' => $parent,
+        ];
+
+        $middle = $this->post_json_headers([$line]);
 
         return json_decode($this->execute($endpoint, $middle));
     }
 
     function print($linetype, $id)
     {
-        $endpoint = '/' . $linetype . '/' . $id . '/print';
+        $endpoint = '/' . $linetype . '/print?id=' . $id;
         $middle = $this->post_headers();
 
         return json_decode($this->execute($endpoint, $middle));
@@ -177,11 +182,6 @@ class ApiClient
         return json_decode($this->execute("/{$linetype}/info"));
     }
 
-    function tablelink($tablelink)
-    {
-        return json_decode($this->execute("/tablelink/{$tablelink}/info"));
-    }
-
     function suggested($linetype)
     {
         return json_decode($this->execute("/{$linetype}/suggested"), true);
@@ -190,11 +190,6 @@ class ApiClient
     function get($linetype, $id)
     {
         return json_decode($this->execute("/{$linetype}/{$id}"));
-    }
-
-    function children($linetype, $childset, $id)
-    {
-        return json_decode($this->execute("/{$linetype}/{$id}/child/{$childset}"));
     }
 
     function file($file)
