@@ -192,6 +192,16 @@ class ApiClient
         return json_decode($this->execute("/{$linetype}/{$id}"));
     }
 
+    function html($linetype, $id)
+    {
+        return $this->execute("/{$linetype}/{$id}/html");
+    }
+
+    function pdf($linetype, $id)
+    {
+        return $this->execute("/{$linetype}/{$id}/pdf");
+    }
+
     function file($file)
     {
         $endpoint = '/file/' . $file;
