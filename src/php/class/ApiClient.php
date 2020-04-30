@@ -208,4 +208,9 @@ class ApiClient
 
         return json_decode($this->execute($endpoint));
     }
+
+    function download($file)
+    {
+        return $this->execute("/download/{$file}");
+    }
 }
