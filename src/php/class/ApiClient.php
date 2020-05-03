@@ -59,7 +59,8 @@ class ApiClient
         $values = [];
 
         foreach ($filters as $filter) {
-            $values[] = urlencode("{$filter->field}{$filter->cmp}{$filter->value}");
+            $cmp = @$filter->cmp ?? '=';
+            $values[] = urlencode("{$filter->field}{$cmp}{$filter->value}");
         }
 
         return implode('&', $values);
