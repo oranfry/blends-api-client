@@ -2,14 +2,12 @@
 class ApiClient
 {
     private $auth;
-    private $host;
-    private $ip;
+    private $url;
 
-    function __construct($auth, $host, $ip = '127.0.0.1')
+    function __construct($auth, $url)
     {
         $this->auth = $auth;
-        $this->host = $host;
-        $this->ip = $ip;
+        $this->url = $url;
     }
 
     private function execute($endpoint, $middle = null)
@@ -41,15 +39,11 @@ class ApiClient
         $commandparts[] = '-s';
         $commandparts[] = '-H "X-Auth: ' . $this->auth . '"';
 
-        if ($this->ip) {
-            $commandparts[] = '-H "Host: ' . $this->host . '"';
-        }
-
         if ($middle) {
             $commandparts[] = $middle;
         }
 
-        $commandparts[] = "'" . 'http://' . ($this->ip ?? $this->host) . $endpoint . "'";
+        $commandparts[] = "'" . $this->url . $endpoint . "'";
 
         return implode(' ', $commandparts);
     }
