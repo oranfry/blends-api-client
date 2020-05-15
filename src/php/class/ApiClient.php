@@ -125,9 +125,14 @@ class ApiClient
         return $results;
     }
 
-    function save($linetype, $data)
+    function save($linetype, $data, $keep_filedata = false)
     {
         $endpoint = '/' . $linetype;
+
+        if ($keep_filedata) {
+            $endpoint .= '?keepfiledata=1';
+        }
+
         $middle = $this->post_json_headers($data);
 
         return json_decode($this->execute($endpoint, $middle));
