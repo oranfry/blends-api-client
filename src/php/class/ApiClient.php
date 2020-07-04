@@ -1,4 +1,4 @@
-<?php
+ <?php
 class ApiClient
 {
     private $auth;
@@ -74,6 +74,17 @@ class ApiClient
     private function post_headers()
     {
         return '--request POST';
+    }
+
+    function login($username, $password])
+    {
+        $endpoint = '/login';
+        $middle = $this->post_json_headers([
+            'username' => $username,
+            'password' => $password,
+        ]);
+
+        return json_decode($this->execute($endpoint, $middle));
     }
 
     function search($blend, $filters = [])
