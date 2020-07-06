@@ -76,7 +76,7 @@ class ApiClient
         return '--request POST';
     }
 
-    function login($username, $password])
+    function login($username, $password)
     {
         $endpoint = '/login';
         $middle = $this->post_json_headers([
