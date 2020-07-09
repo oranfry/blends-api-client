@@ -1,8 +1,9 @@
-<?php
+ <?php
 class ApiClient
 {
     private $auth;
     private $url;
+    private $touched = null;
 
     function __construct($auth, $url)
     {
@@ -21,9 +22,6 @@ class ApiClient
 
         $data = json_decode($result);
 
-        if (@$data->error) {
-            error_response('Api error (' . $endpoint . ')' . ($data ? ': ' . $data->error : ''));
-        }
         return $result;
     }
 
@@ -76,6 +74,27 @@ class ApiClient
         return '--request POST';
     }
 
+    function touch()
+    {
+        if ($this->touched === null) {
+            $data = json_decode($this->execute('/touch'));
+            $this->touched = is_object($data) && !property_exists($data, 'error');
+        }
+
+        return $this->touched;
+    }
+
+    function login($username, $password)
+    {
+        $endpoint = '/auth/login';
+        $middle = $this->post_json_headers([
+            'username' => $username,
+            'password' => $password,
+        ]);
+
+        return json_decode($this->execute($endpoint, $middle));
+    }
+
     function search($blend, $filters = [])
     {
         $query = $this->render_filters($filters);
@@ -116,10 +135,12 @@ class ApiClient
         $query = $this->render_filters($filters);
         $endpoint = '/blend/' . $blend . '/summaries' . ($query ? "?{$query}" : '');
 
-        $results = [];
+        $results = json_decode($this->execute($endpoint), true);
 
-        foreach (json_decode($this->execute($endpoint), true) as $name => $result) {
-            $results[$name] = (object) $result;
+        if (!@$results->error) {
+            foreach ($results as $name => $result) {
+                $results[$name] = (object) $result;
+            }
         }
 
         return $results;
