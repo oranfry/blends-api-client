@@ -2,8 +2,9 @@
 class ApiClient
 {
     private $auth;
+    private $asuser;
     private $url;
-    private $touched = null;
+    private $touched;
 
     function __construct($auth, $url)
     {
@@ -94,6 +95,15 @@ class ApiClient
 
         return json_decode($this->execute($endpoint, $middle));
     }
+
+    function logout()
+    {
+        $endpoint = '/auth/logout';
+        $middle = $this->post_headers();
+
+        return json_decode($this->execute($endpoint, $middle));
+    }
+
 
     function search($blend, $filters = [])
     {
