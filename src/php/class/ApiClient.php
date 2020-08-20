@@ -36,7 +36,10 @@ class ApiClient
 
         $commandparts[] = 'curl';
         $commandparts[] = '-s';
-        $commandparts[] = '-H "X-Auth: ' . $this->auth . '"';
+
+        if ($this->auth) {
+            $commandparts[] = '-H "X-Auth: ' . $this->auth . '"';
+        }
 
         if ($middle) {
             $commandparts[] = $middle;
