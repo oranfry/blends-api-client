@@ -1,4 +1,4 @@
- <?php
+<?php
 class ApiClient
 {
     private $auth;
