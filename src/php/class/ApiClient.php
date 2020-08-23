@@ -241,3 +241,5 @@ class ApiClient
         return $this->execute(new ApiRequest("/download/{$file}"));
     }
 }
+
+require_once __DIR__ . '/ApiRequest.php';
