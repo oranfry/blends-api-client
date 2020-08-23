@@ -12,42 +12,50 @@ class ApiClient
         $this->url = $url;
     }
 
-    private function execute($endpoint, $middle = null)
+    private function execute($request)
     {
-        $cmd = $this->generateCurlCommand($endpoint, $middle);
-        $result = shell_exec($cmd);
-
-        if (defined('APIDEBUG') && APIDEBUG) {
-            error_log($cmd . ' ' . $result);
-        }
-
-        $data = json_decode($result);
-
-        return $result;
-    }
-
-    public function generateCurlCommand($endpoint, $middle = null)
-    {
-        if (!preg_match('@^/@', $endpoint)) {
+        if (!preg_match('@^/@', $request->endpoint)) {
             error_log('Endpoint should start with /');
         }
 
-        $commandparts = [];
 
-        $commandparts[] = 'curl';
-        $commandparts[] = '-s';
+        $ch = curl_init($this->url . $request->endpoint);
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        if (!in_array($request->method, ['GET', 'POST'])) {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $request->method);
+        } elseif ($request->data || $request->method == 'POST') {
+            curl_setopt($ch, CURLOPT_POST, true);
+        }
+
+        if ($request->data) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($request->data));
+        }
+
+        $headers = [];
 
         if ($this->auth) {
-            $commandparts[] = '-H "X-Auth: ' . $this->auth . '"';
+            $headers[] = 'X-Auth: ' . $this->auth;
         }
 
-        if ($middle) {
-            $commandparts[] = $middle;
+        $headers[] = 'Content-Type: ' . $request->contentType;
+        $headers = array_merge($headers, $request->headers);
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        if (defined('APIDEBUG') && APIDEBUG) {
+            error_log(var_export($request, true));
+            curl_setopt($ch, CURLOPT_VERBOSE, true);
         }
 
-        $commandparts[] = "'" . $this->url . $endpoint . "'";
+        $result = curl_exec($ch);
 
-        return implode(' ', $commandparts);
+        if (defined('APIDEBUG') && APIDEBUG) {
+            error_log(var_export($result, true));
+        }
+
+        return $result;
     }
 
     private function render_filters($filters)
@@ -62,26 +70,10 @@ class ApiClient
         return implode('&', $values);
     }
 
-    public function post_json_headers($data, $method = 'POST')
-    {
-        $parts = [];
-
-        $parts[] = '-H "Content-Type: application/json"';
-        $parts[] = '--request ' . $method;
-        $parts[] = "--data '" . json_encode($data) . "'";
-
-        return implode(' ', $parts);
-    }
-
-    private function post_headers()
-    {
-        return '--request POST';
-    }
-
     function touch()
     {
         if ($this->touched === null) {
-            $data = json_decode($this->execute('/touch'));
+            $data = json_decode($this->execute(new ApiRequest('/touch')));
             $this->touched = is_object($data) && !property_exists($data, 'error');
         }
 
@@ -90,65 +82,64 @@ class ApiClient
 
     function login($username, $password)
     {
-        $endpoint = '/auth/login';
-        $middle = $this->post_json_headers([
+        $request = new ApiRequest('/auth/login');
+        $request->data = (object) [
             'username' => $username,
             'password' => $password,
-        ]);
+        ];
 
-        return json_decode($this->execute($endpoint, $middle));
+        return json_decode($this->execute($request));
     }
 
     function logout()
     {
-        $endpoint = '/auth/logout';
-        $middle = $this->post_headers();
+        $request = new ApiRequest('/auth/logout');
+        $request->method = 'POST';
 
-        return json_decode($this->execute($endpoint, $middle));
+        return json_decode($this->execute($request));
     }
-
 
     function search($blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/blend/' . $blend . '/search' . ($query ? "?{$query}" : '');
+        $request = new ApiRequest('/blend/' . $blend . '/search' . ($query ? "?{$query}" : ''));
 
-        return json_decode($this->execute($endpoint));
+        return json_decode($this->execute($request));
     }
 
     function bulkdelete($blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/blend/' . $blend . '/delete' . ($query ? "?{$query}" : '');
-        $middle = $this->post_headers();
+        $request = new ApiRequest('/blend/' . $blend . '/delete' . ($query ? "?{$query}" : ''));
+        $request->method = 'POST';
 
-        return json_decode($this->execute($endpoint, $middle));
+        return json_decode($this->execute($request));
     }
 
     function bulkupdate($blend, $data, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/blend/' . $blend . '/update' . ($query ? "?{$query}" : '');
-        $middle = $this->post_json_headers($data);
+        $request = new ApiRequest('/blend/' . $blend . '/update' . ($query ? "?{$query}" : ''));
+        $request->data = $data;
 
-        return json_decode($this->execute($endpoint, $middle));
+        return json_decode($this->execute($request));
     }
 
     function bulkprint($blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/blend/' . $blend . '/print' . ($query ? "?{$query}" : '');
-        $middle = $this->post_headers();
+        $request = new ApiRequest('/blend/' . $blend . '/print' . ($query ? "?{$query}" : ''));
+        $request->method = 'POST';
 
-        return json_decode($this->execute($endpoint, $middle));
+        return json_decode($this->execute($request));
     }
 
     function summaries($blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $endpoint = '/blend/' . $blend . '/summaries' . ($query ? "?{$query}" : '');
+        $request = new ApiRequest('/blend/' . $blend . '/summaries' . ($query ? "?{$query}" : ''));
 
-        $results = json_decode($this->execute($endpoint), true);
+        $results = json_decode($this->execute($request), true);
 
         if (!@$results->error) {
             foreach ($results as $name => $result) {
@@ -167,84 +158,86 @@ class ApiClient
             $endpoint .= '?keepfiledata=1';
         }
 
-        $middle = $this->post_json_headers($data);
+        $request = new ApiRequest($endpoint);
+        $request->data = $data;
 
-        return json_decode($this->execute($endpoint, $middle));
+        return json_decode($this->execute($request));
     }
 
     function delete($linetype, $id)
     {
-        $endpoint = '/' . $linetype . '/delete?id=' . $id;
-        $middle = $this->post_headers();
+        $request = new ApiRequest('/' . $linetype . '/delete?id=' . $id);
+        $request->method = 'POST';
 
-        return json_decode($this->execute($endpoint, $middle));
+        return json_decode($this->execute($request));
     }
 
     function unlink($linetype, $id, $parent)
     {
-        $endpoint = '/' . $linetype . '/unlink';
         $line = (object) [
             'id' => $id,
             'parent' => $parent,
         ];
 
-        $middle = $this->post_json_headers([$line]);
+        $request = new ApiRequest('/' . $linetype . '/unlink');
+        $request->data = [$line];
 
-        return json_decode($this->execute($endpoint, $middle));
+        return json_decode($this->execute($request));
     }
 
     function print($linetype, $id)
     {
-        $endpoint = '/' . $linetype . '/print?id=' . $id;
-        $middle = $this->post_headers();
+        $request = new ApiRequest('/' . $linetype . '/print?id=' . $id);
+        $request->method = 'POST';
 
-        return json_decode($this->execute($endpoint, $middle));
+        return json_decode($this->execute($request));
     }
 
     function blends()
     {
-        return json_decode($this->execute("/blend/list"));
+        return json_decode($this->execute(new ApiRequest("/blend/list")));
     }
 
     function blend($blend)
     {
-        return json_decode($this->execute("/blend/{$blend}/info"));
+        return json_decode($this->execute(new ApiRequest("/blend/{$blend}/info")));
     }
 
     function linetype($linetype)
     {
-        return json_decode($this->execute("/{$linetype}/info"));
+        return json_decode($this->execute(new ApiRequest("/{$linetype}/info")));
     }
 
     function suggested($linetype)
     {
-        return json_decode($this->execute("/{$linetype}/suggested"), true);
+        return json_decode($this->execute(new ApiRequest("/{$linetype}/suggested")), true);
     }
 
     function get($linetype, $id)
     {
-        return json_decode($this->execute("/{$linetype}/{$id}"));
+        return json_decode($this->execute(new ApiRequest("/{$linetype}/{$id}")));
     }
 
     function html($linetype, $id)
     {
-        return $this->execute("/{$linetype}/{$id}/html");
+        return $this->execute(new ApiRequest("/{$linetype}/{$id}/html"));
     }
 
     function pdf($linetype, $id)
     {
-        return $this->execute("/{$linetype}/{$id}/pdf");
+        return $this->execute(new ApiRequest("/{$linetype}/{$id}/pdf"));
     }
 
     function file($file)
     {
         $endpoint = '/file/' . $file;
+        $request = new ApiRequest($endpoint);
 
-        return json_decode($this->execute($endpoint));
+        return json_decode($this->execute($request));
     }
 
     function download($file)
     {
-        return $this->execute("/download/{$file}");
+        return $this->execute(new ApiRequest("/download/{$file}"));
     }
 }
