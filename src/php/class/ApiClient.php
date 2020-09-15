@@ -134,20 +134,14 @@ class ApiClient
         return json_decode($this->execute($request));
     }
 
-    function summaries($blend, $filters = [])
+    function summary($blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $request = new ApiRequest('/blend/' . $blend . '/summaries' . ($query ? "?{$query}" : ''));
+        $request = new ApiRequest('/blend/' . $blend . '/summary' . ($query ? "?{$query}" : ''));
 
-        $results = json_decode($this->execute($request), true);
+        $result = $this->execute($request);
 
-        if (!@$results->error) {
-            foreach ($results as $name => $result) {
-                $results[$name] = (object) $result;
-            }
-        }
-
-        return $results;
+        return json_decode($result);
     }
 
     function save($linetype, $data, $keep_filedata = false)
