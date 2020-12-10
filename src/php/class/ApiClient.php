@@ -18,8 +18,7 @@ class ApiClient
             error_log('Endpoint should start with /');
         }
 
-
-        $ch = curl_init($this->url . $request->endpoint);
+        $ch = curl_init($this->url . '/api' . $request->endpoint);
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
