@@ -109,8 +109,8 @@ class ApiClient
     function bulkdelete($blend, $filters = [])
     {
         $query = $this->render_filters($filters);
-        $request = new ApiRequest('/blend/' . $blend . '/delete' . ($query ? "?{$query}" : ''));
-        $request->method = 'POST';
+        $request = new ApiRequest('/blend/' . $blend . ($query ? "?{$query}" : ''));
+        $request->method = 'DELETE';
 
         return json_decode($this->execute($request));
     }
@@ -159,8 +159,8 @@ class ApiClient
 
     function delete($linetype, $id)
     {
-        $request = new ApiRequest('/' . $linetype . '/delete?id=' . $id);
-        $request->method = 'POST';
+        $request = new ApiRequest('/' . $linetype . '/' . $id);
+        $request->method = 'DELETE';
 
         return json_decode($this->execute($request));
     }
