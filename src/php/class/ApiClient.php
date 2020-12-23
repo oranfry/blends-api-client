@@ -63,7 +63,8 @@ class ApiClient
 
         foreach ($filters as $filter) {
             $cmp = @$filter->cmp ?? '=';
-            $values[] = urlencode("{$filter->field}{$cmp}{$filter->value}");
+            $filter_value = is_array($filter->value) ? implode(',', $filter->value) : $filter->value;
+            $values[] = urlencode("{$filter->field}{$cmp}{$filter_value}");
         }
 
         return implode('&', $values);
